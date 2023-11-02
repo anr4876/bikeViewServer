@@ -3,9 +3,11 @@ import React, { useState,useEffect } from "react";
 import { Map, MapMarker, MapTypeId, } from "react-kakao-maps-sdk";
 import PopupView from "./PopupView";
 import axios from 'axios';
+import TashuView from "./tashuView";
 
 //분리
 import { positions } from "./data"
+
 
 const App = () => {
   
@@ -29,6 +31,7 @@ const App = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [tashuV,setTashuV] = useState(false);
 
 
   useEffect(() => {
@@ -123,9 +126,11 @@ const App = () => {
               width: 36,
               height: 47,
             },
-          }}/> );
+          }}
+          onClick={() => setTashuV(true)}
+          /> );
         })}
-      
+        
         {positions.map((position, index) => (
           <MapMarker
           key={`${position.title}-${position.latlng}-${position.img}-${position.imgs}`}
@@ -156,7 +161,7 @@ const App = () => {
           <MapTypeId key={mapTypeId} type={mapTypeId} />
           ))}
       </Map>
-
+      {tashuV && (<TashuView/>) }
       <PopupView
         style={{
           position: "absolute",
@@ -171,7 +176,7 @@ const App = () => {
         description={mapText}
         isVisible={isPopupVisible}
         onCloseClicked={() => setPopupVisible(s => !s)}
-       />
+      />
     </div>
   );
 };
