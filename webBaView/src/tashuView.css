@@ -1,0 +1,56 @@
+/* tashuView.css */
+.tashu-view {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin: auto;
+    width: 300px;
+    height: 300px; /* 팝업창을 세로로 길게 조정 */
+    background-color: white;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.25);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    backdrop-filter: blur(10px);
+  }
+
+  .tashu-view-title {
+    font-weight: bold;
+  }
+
+  img {
+    max-width: 100%;
+  }
+  
+  .tashu-view-close-btn {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 20px;
+  }
+  
+  .tashu-view-description {
+    margin-bottom: 10px;
+  }
+  
+  .tashu-view-btn {
+    background-color: blue;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .hidden {
+    display: none;
+  }
+  
