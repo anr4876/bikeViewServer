@@ -1,5 +1,5 @@
 /*global kakao*/
-import React, { useState,useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Map, MapMarker, MapTypeId, } from "react-kakao-maps-sdk";
 import PopupView from "./PopupView";
 import axios from 'axios';
@@ -10,8 +10,8 @@ import { positions } from "./data"
 
 
 const App = () => {
-  
-  const mapTypeIds = [kakao.maps.MapTypeId.BICYCLE];
+
+  const [mapTypeIds, setMapTypeIds] = useState([]);
   const [mapAddress, setMapAddress] = useState(null);
   const [mapText, setMapText] = useState(null);
   // const [mapWidth, setMapWidth] = useState("0");
@@ -31,7 +31,15 @@ const App = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [tashuV,setTashuV] = useState(false);
+  const [tashuV, setTashuV] = useState(false);
+
+  // 타슈 데이터
+  const [tashuAdd, setTashuAdd] = useState(null);
+  const [tashuPk, setTashuPk] = useState(null);
+
+  // 타슈 on & off
+  const [tf, setTf] = useState(false);
+  // 자전거 도로 on & off
 
 
   useEffect(() => {
@@ -59,17 +67,17 @@ const App = () => {
 
         // 가져온 데이터 설정
         setData(response.data.data);
-        
+
         // 로딩 상태 업데이트
         setLoading(false);
-        
+
       } catch (error) {
         // 에러 발생 시 처리
         setError(error);
         setLoading(false);
       }
     };
-    
+
     fetchData();
   }, []);
 
@@ -96,7 +104,12 @@ const App = () => {
     setPopupVisible(true);
   };
 
-
+  // 타슈 마커를 클릭할 때 호출되는 함수
+  const handleTashuClick = (address, pk) => {
+    setTashuAdd(address);
+    setTashuPk(pk);
+    setTashuV(true);
+  };
 
   return (
     <div
@@ -106,8 +119,38 @@ const App = () => {
         position: "relative",
       }}
     >
+      <button
+        style={{
+          position: "absolute",
+          top: "10px",
+          left: "10px",
+          zIndex: 1,
+        }}
+        onClick={() => {
+          tf ? setTf(false) : setTf(true);
+          setTashuV(false);
+        }}
+      >
+        타슈 {tf ? "끄기" : "켜기"}
+      </button>
+
+      <button
+        style={{
+          position: "absolute",
+          top: "10px",
+          left: "100px",
+          zIndex: 1,
+        }}
+        onClick={() => {
+          mapTypeIds.length === 0 ? setMapTypeIds([kakao.maps.MapTypeId.BICYCLE]) : setMapTypeIds([]);
+        }}
+      >
+        자전거도로 {mapTypeIds.length === 0 ? "켜기" : "끄기"}
+      </button>
+
+
       <Map
-        center={{ lat: mapCenterLat === null ? latPosition : mapCenterLat , lng : mapCenterLng === null ? lngPosition : mapCenterLng}}
+        center={{ lat: mapCenterLat === null ? latPosition : mapCenterLat, lng: mapCenterLng === null ? lngPosition : mapCenterLng }}
         style={{ width: "100%", height: "100%", zIndex: 0 }}
         level={3}
       >
@@ -115,53 +158,72 @@ const App = () => {
           <MapMarker position={{ lat: latPosition, lng: lngPosition }} />
         )}
 
-        {data.map((item,index) => {
+        {tf && data.map((item, index) => {
 
           return (<MapMarker
-          key = {index}
-          position={{lat: item.x_pos, lng: item.y_pos}}
-          image = {{
-            src: "https://upload.wikimedia.org/wikipedia/commons/5/55/BicycleMarkerSymbol.png",
-            size: {
-              width: 36,
-              height: 47,
-            },
-          }}
-          onClick={() => setTashuV(true)}
-          /> );
+            key={index}
+            position={{ lat: item.x_pos, lng: item.y_pos }}
+            image={{
+              src: "https://upload.wikimedia.org/wikipedia/commons/5/55/BicycleMarkerSymbol.png",
+              size: {
+                width: 36,
+                height: 47,
+              },
+            }}
+            onClick={() => handleTashuClick(
+              item.address,
+              item.parking_count,
+            )}
+          />);
         })}
-        
+
         {positions.map((position, index) => (
           <MapMarker
-          key={`${position.title}-${position.latlng}-${position.img}-${position.imgs}`}
-          position={position.latlng}
-          image={{
-            src: position.img,
-            size: {
-              width: 250,
-              height: 139,
-            },
-            
-          }}
-          onClick={() =>
-            handleMarkerClick(
-              position.latlng.lat,
-              position.latlng.lng,
-              position.title,
-              position.imgs,
-              position.address,
-              position.text
+            key={`${position.title}-${position.latlng}-${position.img}-${position.imgs}`}
+            position={position.latlng}
+            image={{
+              src: position.img,
+              size: {
+                width: 250,
+                height: 139,
+              },
+
+            }}
+            onClick={() =>
+              handleMarkerClick(
+                position.latlng.lat,
+                position.latlng.lng,
+                position.title,
+                position.imgs,
+                position.address,
+                position.text
               )
             }
             title={position.title}
-            ></MapMarker>
-            ))}
+          ></MapMarker>
+        ))}
 
         {mapTypeIds.map((mapTypeId) => (
           <MapTypeId key={mapTypeId} type={mapTypeId} />
-          ))}
+        ))}
       </Map>
-      {tashuV && (<TashuView/>) }
+
+      {tashuV && (
+        <TashuView
+          style={{
+            position: "absolute",
+            bottom: "1.5rem",
+            width: "94%",
+            left: "3%",
+            height: "43%",
+          }}
+          add={tashuAdd}
+          pk={tashuPk}
+          isVisible={tashuV}
+          onCloseClicked={() => setTashuV(false)}
+        />
+      )}
+
       <PopupView
         style={{
           position: "absolute",
@@ -177,6 +239,7 @@ const App = () => {
         isVisible={isPopupVisible}
         onCloseClicked={() => setPopupVisible(s => !s)}
       />
+
     </div>
   );
 };
